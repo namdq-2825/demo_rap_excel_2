@@ -1,0 +1,70 @@
+<mvc:View controllerName="zsalesorder.controller.SaleOrderList"
+    xmlns:t="sap.ui.table"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:u="sap.ui.unified"
+	xmlns:c="sap.ui.core"
+    xmlns="sap.m">
+    <Page id="page" title="{i18n>title}">
+        <content>
+            <FlexBox justifyContent="End" >
+                <FlexBox>
+                    <Select
+                        id="templateList"
+                        forceSelection="false"
+                        items="{
+                            path: '/TemplateExport',
+                            parameters: {
+                                '$select': 'Uuid,Name,TemplateAlias'
+                            },
+                            sorter: { path: 'Name' }
+                        }">
+                        <c:Item key="{TemplateAlias},{Uuid}" text="{Name}" />
+                    </Select>
+                    <Button
+                        text="Export"
+                        press="handleExport"/>
+                </FlexBox >
+            </FlexBox>
+            <Table
+                id="SalesOrderList" 
+                items="{
+                    path: '/ZC_SALESORDER',
+                    parameters: {
+                        '$select': 'SalesOrder,SoldToParty,CustomerName,SalesOrganization,DistributionChannel'
+                    }
+                }"
+                inset="false"
+                mode="MultiSelect"
+                headerText="Danh sách Sales Order">
+                <columns>
+                    <Column>
+                        <Text text="SO Number" />
+                    </Column>
+                    <Column>
+                        <Text text="Sold To Party" />
+                    </Column>
+                    <Column>
+                        <Text text="Customer Name" />
+                    </Column>
+                    <Column>
+                        <Text text="Sales Organization" />
+                    </Column>
+                    <Column>
+                        <Text text="Distribution Channel" />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem vAlign="Middle">
+                        <cells>
+                            <Text text="{SalesOrder}" />
+                            <Text text="{SoldToParty}" />
+                            <Text text="{CustomerName}" />
+                            <Text text="{SalesOrganization}" />
+                            <Text text="{DistributionChannel}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
+        </content>
+    </Page>
+</mvc:View>
