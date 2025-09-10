@@ -21,8 +21,11 @@
                         <c:Item key="{TemplateAlias},{Uuid}" text="{Name}" />
                     </Select>
                     <Button
-                        text="Export"
-                        press="handleExport"/>
+                        text="Export Excel"
+                        press="handleExportExcel"/>
+                    <Button
+                        text="Export PDF"
+                        press="handleExportPDF"/>
                 </FlexBox >
             </FlexBox>
             <Table

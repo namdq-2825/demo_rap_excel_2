@@ -9,7 +9,7 @@ sap.ui.define([
         onInit() {
         },
 
-        async handleExport() {
+        async handleExportExcel() {
             const templateListElm = this.byId("templateList");
             const salesOrderTableElm = this.byId("SalesOrderList");
             await import("https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js");
@@ -88,6 +88,82 @@ sap.ui.define([
                 })
             }
 
+        },
+
+        handleExportPDF() {
+            const salesOrderTableElm = this.byId("SalesOrderList");
+            const tableData = salesOrderTableElm.getItems().map((item) => item.getBindingContext().getObject())
+
+            const genHtml = (data) => {
+                return `
+                    <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8" />
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                            <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+                            <title>Sales Order Report</title>
+                            <style>
+                            h1 {
+                                text-align: center;
+                                margin-bottom: 24px;
+                            }
+
+                            table {
+                                border-collapse: collapse;
+                            }
+
+                            td,
+                            th {
+                                padding: 8px 16px;
+                                border: 1px solid #333333;
+                            }
+                            </style>
+                        </head>
+                        <body>
+                            <h1>SALES ORDER REPOST</h1>
+                            <table>
+                            <thead>
+                                <th>Number</th>
+                                <th>Sale to Party</th>
+                                <th>Customer</th>
+                                <th>Sales Organization</th>
+                                <th>Distribution Channel</th>
+                            </thead>
+                            <tbody>
+                                ${ data.map((item) => `
+                                    <tr>
+                                        <td>${item.SalesOrder}</td>
+                                        <td>${item.SoldToParty}</td>
+                                        <td>${item.CustomerName}</td>
+                                        <td>${item.SalesOrganization}</td>
+                                        <td>${item.DistributionChannel}</td>
+                                    </tr>    
+                                `).join('') }
+                            </tbody>
+                            </table>
+                        </body>
+                        </html>
+
+                `
+            }
+
+            const html = genHtml(tableData)
+
+            const ctrlString = "width=1000px,height=1000px";
+
+			const wind = window.open("", "PrintWindow", ctrlString);
+
+            if (wind !== undefined) {
+                wind.document.write(html);
+            }
+
+
+            setTimeout(function () {
+                wind.print();
+                wind.close();
+
+            }, 500);
         }
     });
 });

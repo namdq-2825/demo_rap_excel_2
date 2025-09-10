@@ -25,6 +25,19 @@
           "odataVersion": "4.0"
         }
       }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "ZSO_DEMO_PDF-display": {
+          "semanticObject": "ZSO_DEMO_PDF",
+          "action": "display",
+          "title": "{{ZSO_DEMO_PDF-display.flpTitle}}",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
     }
   },
   "sap.ui": {
