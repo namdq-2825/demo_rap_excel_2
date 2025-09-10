@@ -34,7 +34,7 @@
                     }
                 }"
                 inset="false"
-                mode="MultiSelect"
+                mode="SingleSelectLeft"
                 headerText="Danh sách Sales Order">
                 <columns>
                     <Column>

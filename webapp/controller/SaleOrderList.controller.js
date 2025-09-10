@@ -43,17 +43,6 @@ sap.ui.define([
 
                     const worksheet = workbook.getWorksheet(1);
 
-                    Excel.replaceSingleVar({
-                        workbook,
-                        worksheet,
-                        replacements: {
-                            "%SO_ID": "1212123",
-                            "%sold_to_party": "CUST_001",
-                            "%customer_name": "Nguyen Van A",
-                            "%sale_org": 'saleOrgDemo'
-                        }
-                    })
-
                     Excel.replaceTableVar({
                         worksheet,
                         tableMarker: '%_SALES_ORDER_TS_%',
@@ -66,12 +55,39 @@ sap.ui.define([
                 })
             }
 
+            if (aliasTemplate === 'SALE_ORDER_DETAIL_TEMPLATE') {
+                const selectedItem = salesOrderTableElm.getSelectedItems()
+                if (!selectedItem.length) {
+                    MessageToast.show("Please select 1 sale order !");
 
-            // if (!salesOrderTableElm.getSelectedItems().length) {
-            //     MessageToast.show("Please select 1 sale order !");
+                    return 
+                }
 
-            //     return 
-            // }
+                const data = selectedItem[0].getBindingContext().getObject();
+
+                Excel.loadFile(templateUrl).then(async (f) => {
+                    const workbook = new ExcelJS.Workbook();
+                    await workbook.xlsx.load(f);
+
+                    const worksheet = workbook.getWorksheet(1);
+
+                    Excel.replaceSingleVar({
+                        workbook,
+                        worksheet,
+                        replacements: {
+                            "%SO_ID": data.SalesOrder,
+                            "%sold_to_party": data.SoldToParty,
+                            "%customer_name": data.CustomerName,
+                            "%sale_org": data.SalesOrganization,
+                        }
+                    })
+
+                    const buffer = await workbook.xlsx.writeBuffer();
+
+                    Excel.handleExport(buffer);
+                })
+            }
+
         }
     });
 });
