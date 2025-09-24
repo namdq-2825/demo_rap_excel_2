@@ -23,11 +23,19 @@
                     <Button
                         text="Export Excel"
                         press="handleExportExcel"/>
+
+                    <Button
+                        text="Export Excel By RAP"
+                        press="handleExportExcelByRAP"/>
                     <Button
                         text="Export PDF"
                         press="handleExportPDF"/>
+                    <Button
+                        text="Export PDF with Chart"
+                        press="handleExportPDFWithChart"/>
                 </FlexBox >
             </FlexBox>
+            <VBox id="chartContainer" />
             <Table
                 id="SalesOrderList" 
                 items="{
