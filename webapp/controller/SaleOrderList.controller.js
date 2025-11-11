@@ -8,8 +8,13 @@ sap.ui.define([
     "use strict";
 
     return Controller.extend("zsalesorder.controller.SaleOrderList", {
-        onInit() {
+        async onInit() {
             Loader.init(this.getView());
+            await import("https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js");
+            this.ExcelJS = ExcelJS;
+
+            await import("https://cdnjs.cloudflare.com/ajax/libs/xlsx-populate/1.21.0/xlsx-populate.min.js");
+            this.XlsxPopulate = XlsxPopulate;
         },
 
         async handleExportExcel() {
@@ -29,7 +34,6 @@ sap.ui.define([
 
             const templateUrl = sServiceUrl + `TemplateExport(Uuid=${uuidTemplate},TemplateAlias='${aliasTemplate}',IsActiveEntity=true)/Attachment`;
 
-            await import("https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js");
 
             if (aliasTemplate === 'SALE_ORDER_LIST_TEMPLATE') {
                 const tableData = salesOrderTableElm.getItems().map((item) => item.getBindingContext().getObject())
@@ -42,7 +46,7 @@ sap.ui.define([
                 }));
 
                 Excel.loadFile(templateUrl).then(async (f) => {
-                    const workbook = new ExcelJS.Workbook();
+                    const workbook = new this.ExcelJS.Workbook();
                     await workbook.xlsx.load(f);
 
                     const worksheet = workbook.getWorksheet(1);
@@ -70,7 +74,7 @@ sap.ui.define([
                 const data = selectedItem[0].getBindingContext().getObject();
 
                 Excel.loadFile(templateUrl).then(async (f) => {
-                    const workbook = new ExcelJS.Workbook();
+                    const workbook = new this.ExcelJS.Workbook();
                     await workbook.xlsx.load(f);
 
                     const worksheet = workbook.getWorksheet(1);
@@ -93,11 +97,9 @@ sap.ui.define([
             }
 
             if (aliasTemplate === 'DEMO_CHART') {
-                await import("https://cdnjs.cloudflare.com/ajax/libs/xlsx-populate/1.21.0/xlsx-populate.min.js");
-
                 Excel.loadFile(templateUrl).then(async (f) => {
 
-                    const workbook = await XlsxPopulate.fromDataAsync(f);
+                    const workbook = await this.XlsxPopulate.fromDataAsync(f);
                     const worksheet = workbook.sheet('Sheet1')
 
                     Excel.xpReplaceByCoords(    
@@ -129,7 +131,7 @@ sap.ui.define([
 
             if (aliasTemplate === 'DEMO_MERGE_CELL') {
                 Excel.loadFile(templateUrl).then(async (f) => {
-                    const workbook = new ExcelJS.Workbook();
+                    const workbook = new this.ExcelJS.Workbook();
                     await workbook.xlsx.load(f);
 
                     const worksheet = workbook.getWorksheet(1);
@@ -555,7 +557,7 @@ sap.ui.define([
             const sServiceUrl = "/sap/opu/odata4/sap/z_salesorder__o4_sb/srvd/sap/z_salesorder_1_sd/0001/";
 
             const fetchData = async (skip) => {
-                const perPage = 50000;
+                const perPage = 5000;
 
                 return new Promise((resolve, reject) => {
 
@@ -569,7 +571,7 @@ sap.ui.define([
                     .then(async (res) => {
                         vbapData.push(...res.value);
                         totalRecord = res['@odata.count']
-                        console.log(res.value, res.value.length, perPage, totalRecord)
+            
                         if (res.value.length === perPage) {
                             Loader.show(`Đang tải dữ liệu... (${Number(skip).toLocaleString()}/${Number(totalRecord).toLocaleString()})`)
                             resolve(await fetchData(skip + perPage));
@@ -584,7 +586,6 @@ sap.ui.define([
             }
 
             const templateListElm = this.byId("templateList");
-            await import("https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js");
 
             const selectedTemplate = templateListElm.mProperties.selectedKey;
             const [ aliasTemplate, uuidTemplate ] = selectedTemplate.split(",");
@@ -605,7 +606,7 @@ sap.ui.define([
                 setTimeout(() => Loader.show('Đang tạo file...'), 500)
 
                 Excel.loadFile(templateUrl).then(async (f) => {
-                    const workbook = new ExcelJS.Workbook();
+                    const workbook = new this.ExcelJS.Workbook();
                     await workbook.xlsx.load(f);
                     const worksheet = workbook.getWorksheet(1);
 

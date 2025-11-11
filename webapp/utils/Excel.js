@@ -102,7 +102,7 @@ sap.ui.define([], function () {
             used.cells().forEach(row => {
                 row.forEach((cell) => {
                     const v = cell._value;
-                    console.log(v);
+
                     if (typeof v === "string") {
                         let out = v;
                         for (const [k, val] of Object.entries(replacements)) {
