@@ -33,9 +33,12 @@
                     <Button
                         text="Export PDF with Chart"
                         press="handleExportPDFWithChart"/>
+                    <Button
+                        text="Export large Excel"
+                        press="handleExportLargeData"/>
                 </FlexBox >
             </FlexBox>
-            <VBox id="chartContainer" />
+            
             <Table
                 id="SalesOrderList" 
                 items="{
@@ -44,7 +47,11 @@
                         '$select': 'SalesOrder,SoldToParty,CustomerName,SalesOrganization,DistributionChannel'
                     }
                 }"
-                inset="false"
+                growing="true"
+                growingThreshold="20"
+                growingTriggerText="Load thêm"
+                growingScrollToLoad="true"
+                inset="true"
                 mode="SingleSelectLeft"
                 headerText="Danh sách Sales Order">
                 <columns>
@@ -76,6 +83,8 @@
                     </ColumnListItem>
                 </items>
             </Table>
+
+            <VBox id="customLoading" class="loader"></VBox>
         </content>
     </Page>
 </mvc:View>

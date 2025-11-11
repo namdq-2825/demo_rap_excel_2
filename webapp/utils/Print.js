@@ -20,7 +20,7 @@ sap.ui.define([], function () {
 
             console.log(`Bắt đầu in tài liệu số ${jobIndex + 1}...`);
             const htmlContent = printJobsData[jobIndex];
-
+            
             // Nếu chưa có window thì mở 1 lần
             if (!printWindow || printWindow.closed) {
                 printWindow = window.open("", "PrintWindow", "width=1000px,height=1000px");

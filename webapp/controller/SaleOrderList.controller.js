@@ -3,17 +3,18 @@ sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "zsalesorder/utils/Excel",
     "zsalesorder/utils/Print",
-], (MessageToast, Controller, Excel, Print) => {
+    "zsalesorder/utils/Loader",
+], (MessageToast, Controller, Excel, Print, Loader) => {
     "use strict";
 
     return Controller.extend("zsalesorder.controller.SaleOrderList", {
         onInit() {
+            Loader.init(this.getView());
         },
 
         async handleExportExcel() {
             const templateListElm = this.byId("templateList");
             const salesOrderTableElm = this.byId("SalesOrderList");
-            await import("https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js");
 
             const selectedTemplate = templateListElm.mProperties.selectedKey;
             const [ aliasTemplate, uuidTemplate ] = selectedTemplate.split(",");
@@ -27,6 +28,8 @@ sap.ui.define([
             const sServiceUrl = "/sap/opu/odata4/sap/z_salesorder__o4_sb/srvd/sap/z_salesorder_1_sd/0001/";
 
             const templateUrl = sServiceUrl + `TemplateExport(Uuid=${uuidTemplate},TemplateAlias='${aliasTemplate}',IsActiveEntity=true)/Attachment`;
+
+            await import("https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js");
 
             if (aliasTemplate === 'SALE_ORDER_LIST_TEMPLATE') {
                 const tableData = salesOrderTableElm.getItems().map((item) => item.getBindingContext().getObject())
@@ -90,33 +93,37 @@ sap.ui.define([
             }
 
             if (aliasTemplate === 'DEMO_CHART') {
+                await import("https://cdnjs.cloudflare.com/ajax/libs/xlsx-populate/1.21.0/xlsx-populate.min.js");
+
                 Excel.loadFile(templateUrl).then(async (f) => {
-                    const workbook = new ExcelJS.Workbook();
-                    await workbook.xlsx.load(f);
 
-                    const worksheet = workbook.getWorksheet(1);
+                    const workbook = await XlsxPopulate.fromDataAsync(f);
+                    const worksheet = workbook.sheet('Sheet1')
 
-                    Excel.replaceSingleVar({
-                        workbook,
+                    Excel.xpReplaceByCoords(    
                         worksheet,
-                        replacements: {
+                        {
+                            "B2": 1000,
+                            "B3": 2000,
+                            "B4": 1500,
+                            "B5": 1000,
+                            "B6": 3000,
+                        }
+                    );
+
+                    Excel.xpReplaceSingleVar(    
+                        worksheet,
+                        {
                             "%label_1%": 'Price 1',
                             "%label_2%": 'Price 2',
                             "%label_3%": 'Price 3',
                             "%label_4%": 'Price 4',
                             "%label_5%": 'Price 5',
-
-                            "%value_1%": 1000,
-                            "%value_2%": 2000,
-                            "%value_3%": 1500,
-                            "%value_4%": 1000,
-                            "%value_5%": 3000,
                         }
-                    })
+                    );
 
-                    const buffer = await workbook.xlsx.writeBuffer();
-
-                    Excel.handleExport(buffer);
+                    const blob = await workbook.outputAsync({ type: "blob" });
+                    Excel.handleExport(await blob.arrayBuffer());
                 })
             }
 
@@ -540,6 +547,83 @@ sap.ui.define([
                     downloadExcelFromString(convertBase64UrlToBase64(sBase64), sFileName)
                 });
             });
+        },
+
+        async handleExportLargeData() {
+            const vbapData = [];
+            let totalRecord = 0;
+            const sServiceUrl = "/sap/opu/odata4/sap/z_salesorder__o4_sb/srvd/sap/z_salesorder_1_sd/0001/";
+
+            const fetchData = async (skip) => {
+                const perPage = 50000;
+
+                return new Promise((resolve, reject) => {
+
+                    fetch(sServiceUrl + `ZCE_SALEORDER_LIST?$select=*&$skip=${skip}&$top=${perPage}&$count=true`, {
+                        method: "GET",
+                        headers: {
+                            "Accept": "application/json;odata.metadata=minimal"
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(async (res) => {
+                        vbapData.push(...res.value);
+                        totalRecord = res['@odata.count']
+                        console.log(res.value, res.value.length, perPage, totalRecord)
+                        if (res.value.length === perPage) {
+                            Loader.show(`Đang tải dữ liệu... (${Number(skip).toLocaleString()}/${Number(totalRecord).toLocaleString()})`)
+                            resolve(await fetchData(skip + perPage));
+                        } else {
+                            Loader.show(`Đang tải dữ liệu... (${Number(vbapData.length).toLocaleString()}/${Number(totalRecord).toLocaleString()})`)
+                            resolve(vbapData)
+                        }
+                    })
+                    .catch((error) => {
+                    })
+                })
+            }
+
+            const templateListElm = this.byId("templateList");
+            await import("https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js");
+
+            const selectedTemplate = templateListElm.mProperties.selectedKey;
+            const [ aliasTemplate, uuidTemplate ] = selectedTemplate.split(",");
+
+            if (!aliasTemplate || !uuidTemplate) {
+                MessageToast.show("Please select export template !");
+
+                return
+            }
+
+
+            const templateUrl = sServiceUrl + `TemplateExport(Uuid=${uuidTemplate},TemplateAlias='${aliasTemplate}',IsActiveEntity=true)/Attachment`;
+
+            Loader.show('Đang tải dữ liệu...')
+
+            fetchData(0).then((data) => {
+
+                setTimeout(() => Loader.show('Đang tạo file...'), 500)
+
+                Excel.loadFile(templateUrl).then(async (f) => {
+                    const workbook = new ExcelJS.Workbook();
+                    await workbook.xlsx.load(f);
+                    const worksheet = workbook.getWorksheet(1);
+
+                    Excel.replaceTableVar({
+                        worksheet,
+                        tableMarker: '%_SALES_ORDER_TS_%',
+                        dataTable: data,
+                    });
+
+                    const buffer = await workbook.xlsx.writeBuffer();
+
+                    Loader.hide()
+
+                    Excel.handleExport(buffer);
+                })
+            })
+
+
         }
     });
 });
