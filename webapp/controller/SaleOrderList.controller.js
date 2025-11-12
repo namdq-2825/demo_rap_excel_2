@@ -21,10 +21,9 @@ sap.ui.define([
             const templateListElm = this.byId("templateList");
             const salesOrderTableElm = this.byId("SalesOrderList");
 
-            const selectedTemplate = templateListElm.mProperties.selectedKey;
-            const [ aliasTemplate, uuidTemplate ] = selectedTemplate.split(",");
+            const aliasTemplate = templateListElm.mProperties.selectedKey;
 
-            if (!aliasTemplate || !uuidTemplate) {
+            if (!aliasTemplate) {
                 MessageToast.show("Please select export template !");
 
                 return
@@ -32,7 +31,7 @@ sap.ui.define([
 
             const sServiceUrl = "/sap/opu/odata4/sap/z_salesorder__o4_sb/srvd/sap/z_salesorder_1_sd/0001/";
 
-            const templateUrl = sServiceUrl + `TemplateExport(Uuid=${uuidTemplate},TemplateAlias='${aliasTemplate}',IsActiveEntity=true)/Attachment`;
+            const templateUrl = sServiceUrl + `TemplateExport(TemplateAlias='${aliasTemplate}',IsActiveEntity=true)/Attachment`;
 
 
             if (aliasTemplate === 'SALE_ORDER_LIST_TEMPLATE') {
@@ -587,17 +586,16 @@ sap.ui.define([
 
             const templateListElm = this.byId("templateList");
 
-            const selectedTemplate = templateListElm.mProperties.selectedKey;
-            const [ aliasTemplate, uuidTemplate ] = selectedTemplate.split(",");
+            const aliasTemplate = templateListElm.mProperties.selectedKey;
 
-            if (!aliasTemplate || !uuidTemplate) {
+            if (!aliasTemplate) {
                 MessageToast.show("Please select export template !");
 
                 return
             }
 
 
-            const templateUrl = sServiceUrl + `TemplateExport(Uuid=${uuidTemplate},TemplateAlias='${aliasTemplate}',IsActiveEntity=true)/Attachment`;
+            const templateUrl = sServiceUrl + `TemplateExport(TemplateAlias='${aliasTemplate}',IsActiveEntity=true)/Attachment`;
 
             Loader.show('Đang tải dữ liệu...')
 

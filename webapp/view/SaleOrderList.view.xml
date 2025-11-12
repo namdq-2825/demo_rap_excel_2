@@ -14,11 +14,11 @@
                         items="{
                             path: '/TemplateExport',
                             parameters: {
-                                '$select': 'Uuid,Name,TemplateAlias'
+                                '$select': 'Name,TemplateAlias'
                             },
                             sorter: { path: 'Name' }
                         }">
-                        <c:Item key="{TemplateAlias},{Uuid}" text="{Name}" />
+                        <c:Item key="{TemplateAlias}" text="{Name}" />
                     </Select>
                     <Button
                         text="Export Excel"
